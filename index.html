@@ -3,367 +3,831 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Coconut Clicker - Click the Coconut!</title>
+    <title>Coconut Ascension: Clicker of the Tropics</title>
     <style>
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-
         body {
+            margin: 0;
             min-height: 100vh;
-            background: linear-gradient(135deg, #1a472a 0%, #2d5a3b 50%, #1a472a 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(145deg, #4a2f1d 0%, #2d1e12 100%);
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        .game-card {
-            background: linear-gradient(145deg, #f5e6c8, #e8d5b7);
-            border-radius: 60px;
-            padding: 40px 30px;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.4);
-            text-align: center;
-            max-width: 550px;
+        .tree-left, .tree-right {
+            position: fixed;
+            bottom: 0;
+            width: 200px;
+            height: auto;
+            pointer-events: none;
+            z-index: 5;
+            filter: drop-shadow(8px 12px 8px rgba(0,0,0,0.3));
+        }
+        .tree-left { left: 10px; }
+        .tree-right { right: 10px; transform: scaleX(-1); }
+        .tree-svg { width: 100%; height: auto; display: block; }
+
+        .game-container {
+            max-width: 750px;
             width: 100%;
-            transition: transform 0.2s;
+            background: rgba(255,248,225,0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 64px;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.4);
+            overflow: hidden;
+            transition: transform 0.1s ease;
+            position: relative;
+            z-index: 20;
+            margin-bottom: 30px;
         }
 
-        h1 {
-            color: #5c3a1e;
-            font-size: 2.2em;
-            margin-bottom: 10px;
+        .game-scroll {
+            max-height: 75vh;
+            overflow-y: auto;
+            padding: 20px 18px 30px;
+            scrollbar-width: thin;
+        }
+
+        .counter-card {
+            background: #fff7e8;
+            border-radius: 60px;
+            padding: 16px 20px;
+            text-align: center;
+            box-shadow: 0 6px 0 #c29b4a;
+            margin-bottom: 20px;
+        }
+
+        .coconut-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #b87333, #e7b42c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .ascension-badge {
+            background: #ffd966;
+            border-radius: 40px;
+            padding: 6px 12px;
+            font-weight: bold;
+            color: #7a3e1f;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .click-area {
+            background: #fbe9c3;
+            border-radius: 80px;
+            padding: 20px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 0 #b6863c;
+        }
+
+        .coconut-btn {
+            background: none;
+            border: none;
+            font-size: 5rem;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            filter: drop-shadow(6px 8px 0 #9b6e3a);
+        }
+        .coconut-btn:active { transform: scale(0.92); }
+
+        .stats-panel {
+            background: #fef3e0;
+            border-radius: 36px;
+            padding: 12px 18px;
+            flex: 1;
+        }
+
+        .merchant-panel {
+            background: #faeecd;
+            border-radius: 48px;
+            padding: 14px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: #ddc7a0;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            transition: width 0.2s linear;
+        }
+
+        .merchant-stock {
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+            padding: 12px 4px;
+        }
+
+        .variant-card {
+            min-width: 110px;
+            background: #fff6e6;
+            border-radius: 28px;
+            padding: 12px 8px;
+            text-align: center;
+            border: 2px solid #e7bc7e;
+        }
+
+        .buy-btn {
+            background: #4c8b3c;
+            border: none;
+            border-radius: 32px;
+            color: white;
+            padding: 6px 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .upgrade-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 14px;
+            padding: 8px 0;
+        }
+
+        .upgrade-item {
+            background: #fffaec;
+            border-radius: 28px;
+            min-width: 130px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
             justify-content: center;
             gap: 12px;
+            margin: 16px 0;
         }
 
-        .coconut {
-            font-size: 180px;
-            cursor: pointer;
-            transition: all 0.08s linear;
-            filter: drop-shadow(12px 15px 0 rgba(0,0,0,0.2));
-            margin: 20px 0;
-            display: inline-block;
-        }
-
-        .coconut:active {
-            transform: scale(0.9);
-            filter: drop-shadow(6px 8px 0 rgba(0,0,0,0.2));
-        }
-
-        .counter {
-            font-size: 56px;
-            font-weight: 800;
-            color: #b87333;
-            background: #fff7e8;
-            padding: 15px 30px;
-            border-radius: 60px;
-            margin: 20px 0;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05), 0 8px 0 #c29b4a;
-            font-family: monospace;
-        }
-
-        .stats {
-            background: #fff0d4;
-            padding: 20px;
-            border-radius: 40px;
-            margin: 20px 0;
-        }
-
-        .stat {
-            font-size: 18px;
-            margin: 10px 0;
-            color: #4a2f1d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 10px;
-        }
-
-        .stat-value {
-            font-weight: bold;
-            color: #b87333;
-            font-size: 22px;
-        }
-
-        button {
+        .action-btn {
             background: #7f5539;
             color: white;
             border: none;
-            padding: 12px 28px;
-            margin: 8px;
-            border-radius: 50px;
-            font-size: 16px;
+            border-radius: 60px;
+            padding: 10px 18px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s, background 0.2s;
+        }
+        .action-btn:hover { background: #9b6a48; transform: scale(1.02); }
+
+        .particle-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        .falling-coconut {
+            position: absolute;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 250;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+        }
+
+        .ascension-glow {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(255,215,0,0.5) 0%, rgba(255,100,0,0) 80%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 150;
+        }
+
+        .achievement-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            color: #3d2b1a;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease;
+            border: 2px solid #fff;
+        }
+        .achievement-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        .achievement-toast span { font-size: 1.8rem; }
+
+        .achievements-panel {
+            background: #fff7e8;
+            border-radius: 48px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .achievement-card {
+            background: #f0e6d0;
+            border-radius: 24px;
+            padding: 12px;
+            text-align: center;
+            border: 2px solid #c9a87b;
+        }
+        .achievement-card.unlocked {
+            background: linear-gradient(135deg, #ffecb3, #ffe0a3);
+            border-color: #ffaa44;
+            box-shadow: 0 0 10px rgba(255,170,68,0.5);
+        }
+        .achievement-card.locked { opacity: 0.6; filter: grayscale(0.3); }
+        .achievement-icon { font-size: 2.2rem; }
+        .achievement-name { font-weight: bold; font-size: 0.8rem; margin-top: 6px; }
+        .achievement-desc { font-size: 0.65rem; color: #6b4c2c; }
+        .achievement-reward { font-size: 0.7rem; color: #d4a017; font-weight: bold; margin-top: 4px; }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: #fff7e6;
+            border-radius: 64px;
+            max-width: 90%;
+            width: 500px;
+            padding: 24px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close-btn {
+            background: #b36b3c;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 20px;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        .import-area {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f0e6d0;
+            border-radius: 32px;
+        }
+        .import-textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 20px;
+            border: 2px solid #c9a87b;
+            font-family: monospace;
+            font-size: 0.8rem;
+            background: #fffef7;
+        }
+        .import-btn {
+            background: #4c8b3c;
+            margin-top: 8px;
+            padding: 6px 16px;
+        }
+        .sound-toggle {
+            background: #7f5539;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .enable-sound-btn {
+            background: #ffaa44;
+            color: #3d2b1a;
+            border: none;
+            border-radius: 60px;
+            padding: 10px 20px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.1s ease;
+            margin-top: 10px;
+            animation: pulse 1s infinite;
         }
+        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
 
-        button:hover {
-            background: #9b6a48;
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: scale(0.95);
-        }
-
-        .upgrade {
-            background: #4c8b3c;
-            font-size: 18px;
-            padding: 14px 32px;
-        }
-
-        .upgrade:hover {
-            background: #5da34a;
-        }
-
-        .reset {
-            background: #8b3c3c;
-        }
-
-        .reset:hover {
-            background: #a34a4a;
-        }
-
-        .footer {
-            margin-top: 20px;
-            font-size: 13px;
-            color: #8b6946;
-        }
-
-        @keyframes floatUp {
-            0% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-80px) scale(1.2);
-            }
-        }
-
-        .floating-number {
-            position: fixed;
-            font-size: 28px;
-            font-weight: bold;
-            color: #ffaa33;
-            text-shadow: 2px 2px 0 #5c3a1e;
-            pointer-events: none;
-            z-index: 1000;
-            animation: floatUp 0.8s ease-out forwards;
-        }
+        @media (max-width: 900px) { .tree-left, .tree-right { width: 140px; } }
+        .save-text { font-size: 0.7rem; text-align: center; margin-top: 16px; color: #8b6946; cursor: pointer; display: inline-block; background: #f0e6d0; padding: 6px 12px; border-radius: 40px; margin-right: 8px; }
+        .save-bar { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
     </style>
 </head>
 <body>
-    <div class="game-card">
-        <h1>
-            <span>🥥</span> Coconut Clicker <span>🌴</span>
-        </h1>
-        
-        <div class="coconut" id="coconut">
-            🥥
-        </div>
-        
-        <div class="counter" id="counter">
-            0
-        </div>
-        
-        <div class="stats">
-            <div class="stat">
-                <span>⚡ Power per click:</span>
-                <span class="stat-value" id="clickPower">1</span>
+
+<div class="tree-left">
+    <svg class="tree-svg" viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100,400 L80,280 L60,300 L90,220 L50,230 L85,160 L40,170 L80,100 L70,50 L100,20 L130,50 L120,100 L160,170 L115,160 L150,230 L110,220 L140,300 L120,280 L100,400Z" fill="#5D3A1A" stroke="#3E2710" stroke-width="3"/>
+        <rect x="88" y="360" width="24" height="40" fill="#7A4A2A"/>
+    </svg>
+</div>
+<div class="tree-right">
+    <svg class="tree-svg" viewBox="0 0 200 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M100,400 L80,280 L60,300 L90,220 L50,230 L85,160 L40,170 L80,100 L70,50 L100,20 L130,50 L120,100 L160,170 L115,160 L150,230 L110,220 L140,300 L120,280 L100,400Z" fill="#5D3A1A" stroke="#3E2710" stroke-width="3"/>
+        <rect x="88" y="360" width="24" height="40" fill="#7A4A2A"/>
+    </svg>
+</div>
+
+<div class="game-container">
+    <div class="game-scroll">
+        <div class="counter-card">
+            <div class="coconut-number" id="coconutDisplay">0</div>
+            <div class="ascension-badge">
+                🌴 Ascension Tier: <span id="ascensionTier">0</span>
+                <span id="ascensionBoostSpan">(+0%)</span>
             </div>
-            <div class="stat">
-                <span>👆 Total clicks:</span>
-                <span class="stat-value" id="totalClicks">0</span>
+            <div class="progress-bar" style="margin-top:12px;">
+                <div class="progress-fill" id="ascensionProgressFill" style="background:#d4a017;"></div>
+            </div>
+            <div id="nextAscensionInfo" style="font-size:0.7rem;">Next ascension: 1,000,000 🥥</div>
+        </div>
+
+        <div class="click-area">
+            <button class="coconut-btn" id="clickCoconutBtn">🥥</button>
+            <div class="stats-panel">
+                <div>⚡ Per click: <strong id="clickPower">1</strong></div>
+                <div>🌊 Passive/sec: <strong id="passiveIncome">0</strong></div>
+                <div>🥥 Total clicks: <span id="totalClicks">0</span></div>
             </div>
         </div>
-        
-        <button class="upgrade" id="upgradeBtn">💪 Upgrade Click (+1) - Cost: 50 🥥</button>
-        <br>
-        <button id="saveBtn">💾 Save Progress</button>
-        <button id="loadBtn">📀 Load Progress</button>
-        <button class="reset" id="resetBtn">🔄 Reset All</button>
-        
-        <div class="footer">
-            💡 Tip: Click the coconut! Upgrade to earn more per click.<br>
-            Your progress saves automatically every 30 seconds!
+
+        <div class="merchant-panel">
+            <div>🏪 Tropical Merchant (special coconuts)</div>
+            <div class="merchant-stock" id="merchantStock"></div>
+        </div>
+
+        <div>
+            <div>✨ Upgrades & blessings</div>
+            <div class="upgrade-scroll" id="upgradeList"></div>
+        </div>
+
+        <div class="action-bar">
+            <button class="action-btn" id="ascendBtn">🌺 ASCEND 🌺</button>
+            <button class="action-btn" id="resetStatsBtn">🗑️ Soft Reset</button>
+            <button class="action-btn" id="showAchievementsBtn">🏆 Achievements</button>
+            <button class="action-btn" id="importExportBtn">💾 Import/Export</button>
+        </div>
+        <div class="save-bar">
+            <div class="save-text" id="saveIndicator">💾 Auto-saved</div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Game state
-        let coconuts = 0;
-        let clickPower = 1;
-        let totalClicks = 0;
-        let upgradeCost = 50;
+<div class="particle-layer" id="particleLayer"></div>
+<div class="ascension-glow" id="ascensionGlow"></div>
+<div id="achievementToast" class="achievement-toast">🎉 <span></span> <span id="toastMsg"></span></div>
 
-        // DOM elements
-        const coconut = document.getElementById('coconut');
-        const counter = document.getElementById('counter');
-        const clickPowerSpan = document.getElementById('clickPower');
-        const totalClicksSpan = document.getElementById('totalClicks');
-        const upgradeBtn = document.getElementById('upgradeBtn');
-        const saveBtn = document.getElementById('saveBtn');
-        const loadBtn = document.getElementById('loadBtn');
-        const resetBtn = document.getElementById('resetBtn');
+<script>
+    // ------------------- GAME STATE -------------------
+    let state = {
+        coconuts: 0,
+        totalCoconutsEarned: 0,
+        clickPower: 1,
+        passivePerSecond: 0,
+        ascensionTier: 0,
+        totalClicks: 0,
+        upgrades: {
+            strongerFingers: 0,    // +1 click power
+            monkeyHelpers: 0,      // +0.5 passive
+            coconutFertilizer: 0   // +0.3 multi
+        },
+        specialsBought: { golden:0, jumbo:0, magical:0 },
+        ascensionBonus: 0,
+        lastTimestamp: Date.now()
+    };
 
-        // Update UI
-        function updateUI() {
-            counter.textContent = Math.floor(coconuts).toLocaleString();
-            clickPowerSpan.textContent = clickPower;
-            totalClicksSpan.textContent = totalClicks.toLocaleString();
-            upgradeBtn.innerHTML = `💪 Upgrade Click (+1) - Cost: ${upgradeCost.toLocaleString()} 🥥`;
+    const specials = [
+        { id: 'golden', name: '✨ Golden Coconut', basePrice: 500, gainCoconuts: 200, emoji: '🌟', desc: '+200 🥥 instantly' },
+        { id: 'jumbo', name: '🐘 Jumbo Coconut', basePrice: 1800, gainCoconuts: 850, emoji: '🥥💥', desc: '+850 🥥' },
+        { id: 'magical', name: '🔮 Magical Coconut', basePrice: 6000, gainCoconuts: 3200, emoji: '✨', desc: '+3200 🥥' }
+    ];
+
+    const upgradesList = [
+        { id: 'strongerFingers', name: '💪 Stronger Fingers', baseCost: 50, effect: () => { state.clickPower += 1; }, desc: '+1 click power', getCost: (lvl) => 50 + (lvl * 40) },
+        { id: 'monkeyHelpers', name: '🐒 Monkey Helpers', baseCost: 120, effect: () => { state.passivePerSecond += 0.5; }, desc: '+0.5 🥥/sec', getCost: (lvl) => 120 + (lvl * 70) },
+        { id: 'coconutFertilizer', name: '🌿 Fertilizer', baseCost: 400, effect: () => { state.passivePerSecond += 0.3; }, desc: '+0.3 🥥/sec', getCost: (lvl) => 400 + (lvl * 150) }
+    ];
+
+    let achievements = [
+        { id: 'click100', name: 'Novice Clicker', desc: '100 total clicks', req: () => state.totalClicks >= 100, reward: 50, icon: '🖱️', unlocked: false },
+        { id: 'click1k', name: 'Coconut Mania', desc: '1000 clicks', req: () => state.totalClicks >= 1000, reward: 300, icon: '🖱️🖱️', unlocked: false },
+        { id: 'coconutMillion', name: 'Millionaire Farmer', desc: '1M total earned', req: () => state.totalCoconutsEarned >= 1000000, reward: 1000, icon: '💸', unlocked: false },
+        { id: 'ascend1', name: 'First Ascension', desc: 'Ascend once', req: () => state.ascensionTier >= 1, reward: 5000, icon: '🌴', unlocked: false },
+        { id: 'ascend5', name: 'Enlightened Grove', desc: 'Ascend 5 times', req: () => state.ascensionTier >= 5, reward: 25000, icon: '🌺', unlocked: false },
+        { id: 'merchantSpree', name: 'Loyal Customer', desc: 'Buy 20 specials', req: () => (state.specialsBought.golden+state.specialsBought.jumbo+state.specialsBought.magical) >= 20, reward: 1500, icon: '🏪', unlocked: false },
+        { id: 'maxPower', name: 'Finger of God', desc: 'Click power 25+', req: () => state.clickPower >= 25, reward: 10000, icon: '⚡', unlocked: false }
+    ];
+
+    function saveGame() { 
+        localStorage.setItem('coconutAscension', JSON.stringify(state)); 
+        localStorage.setItem('achievements', JSON.stringify(achievements.map(a=>a.unlocked))); 
+        const indicator = document.getElementById('saveIndicator');
+        if(indicator) indicator.innerHTML = '💾 Saved!';
+        setTimeout(()=>{ if(document.getElementById('saveIndicator')) document.getElementById('saveIndicator').innerHTML = '💾 Auto-saved'; },1500);
+    }
+    
+    function loadGame() {
+        const saved = localStorage.getItem('coconutAscension');
+        if(saved) {
+            try {
+                const loaded = JSON.parse(saved);
+                state = { ...state, ...loaded };
+                if(!state.specialsBought) state.specialsBought = { golden:0, jumbo:0, magical:0 };
+                if(!state.totalCoconutsEarned) state.totalCoconutsEarned = state.coconuts;
+                if(!state.upgrades) state.upgrades = { strongerFingers:0, monkeyHelpers:0, coconutFertilizer:0 };
+            } catch(e) { console.warn(e); }
         }
-
-        // Create floating number effect
-        function createFloatingNumber(value, x, y) {
-            const floating = document.createElement('div');
-            floating.className = 'floating-number';
-            floating.textContent = `+${value}`;
-            floating.style.left = x + 'px';
-            floating.style.top = y + 'px';
-            document.body.appendChild(floating);
-            
-            setTimeout(() => {
-                floating.remove();
-            }, 800);
+        const achSaved = localStorage.getItem('achievements');
+        if(achSaved) {
+            try {
+                const unlocks = JSON.parse(achSaved);
+                achievements.forEach((ach, idx) => { if(unlocks[idx]) ach.unlocked = true; });
+            } catch(e) {}
         }
-
-        // Click coconut
-        function clickCoconut(event) {
-            coconuts += clickPower;
-            totalClicks++;
-            updateUI();
-            
-            // Animation
-            coconut.style.transform = 'scale(0.85)';
-            setTimeout(() => {
-                coconut.style.transform = 'scale(1)';
-            }, 100);
-            
-            // Floating number effect
-            const rect = coconut.getBoundingClientRect();
-            const x = rect.left + rect.width / 2 - 20;
-            const y = rect.top;
-            createFloatingNumber(clickPower, x, y);
-        }
-
-        // Buy upgrade
-        function buyUpgrade() {
-            if (coconuts >= upgradeCost) {
-                coconuts -= upgradeCost;
-                clickPower++;
-                upgradeCost = Math.floor(upgradeCost * 1.5);
-                updateUI();
-                
-                // Success animation
-                upgradeBtn.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    upgradeBtn.style.transform = 'scale(1)';
-                }, 100);
-            } else {
-                // Not enough coconuts
-                upgradeBtn.style.background = '#8b3c3c';
-                setTimeout(() => {
-                    upgradeBtn.style.background = '#4c8b3c';
-                }, 200);
-            }
-        }
-
-        // Save game
-        function saveGame() {
-            const saveData = {
-                coconuts: coconuts,
-                clickPower: clickPower,
-                totalClicks: totalClicks,
-                upgradeCost: upgradeCost,
-                version: '1.0',
-                savedAt: new Date().toISOString()
-            };
-            localStorage.setItem('coconutClickerSave', JSON.stringify(saveData));
-            
-            const originalText = saveBtn.textContent;
-            saveBtn.textContent = '✅ Saved!';
-            setTimeout(() => {
-                saveBtn.textContent = originalText;
-            }, 1500);
-        }
-
-        // Load game
-        function loadGame() {
-            const savedData = localStorage.getItem('coconutClickerSave');
-            if (savedData) {
-                try {
-                    const data = JSON.parse(savedData);
-                    coconuts = data.coconuts || 0;
-                    clickPower = data.clickPower || 1;
-                    totalClicks = data.totalClicks || 0;
-                    upgradeCost = data.upgradeCost || 50;
-                    updateUI();
-                    
-                    loadBtn.textContent = '✅ Loaded!';
-                    setTimeout(() => {
-                        loadBtn.textContent = '📀 Load Progress';
-                    }, 1500);
-                } catch(e) {
-                    loadBtn.textContent = '❌ Error!';
-                    setTimeout(() => {
-                        loadBtn.textContent = '📀 Load Progress';
-                    }, 1500);
-                }
-            } else {
-                loadBtn.textContent = '❌ No Save Found';
-                setTimeout(() => {
-                    loadBtn.textContent = '📀 Load Progress';
-                }, 1500);
-            }
-        }
-
-        // Reset game
-        function resetGame() {
-            if (confirm('⚠️ WARNING: This will erase ALL your progress! Are you sure?')) {
-                coconuts = 0;
-                clickPower = 1;
-                totalClicks = 0;
-                upgradeCost = 50;
-                updateUI();
-                
-                resetBtn.textContent = '✅ Reset!';
-                setTimeout(() => {
-                    resetBtn.textContent = '🔄 Reset All';
-                }, 1500);
-            }
-        }
-
-        // Event listeners
-        coconut.addEventListener('click', clickCoconut);
-        upgradeBtn.addEventListener('click', buyUpgrade);
-        saveBtn.addEventListener('click', saveGame);
-        loadBtn.addEventListener('click', loadGame);
-        resetBtn.addEventListener('click', resetGame);
-
-        // Auto-save every 30 seconds
-        setInterval(saveGame, 30000);
-
-        // Initial UI
+        recalcPassiveFromUpgrades();
         updateUI();
+    }
 
-        // Auto-load saved game on start
-        const checkSave = localStorage.getItem('coconutClickerSave');
-        if (checkSave) {
-            setTimeout(() => {
-                if (confirm('🎮 Found saved game! Load your progress?')) {
-                    loadGame();
-                }
-            }, 300);
+    function importSaveData(jsonString) {
+        try {
+            const imported = JSON.parse(jsonString);
+            if(!imported || typeof imported !== 'object') throw new Error('Invalid save');
+            // validate minimal fields
+            if(imported.coconuts === undefined) throw new Error('Missing coconut data');
+            state = { ...state, ...imported };
+            if(!state.specialsBought) state.specialsBought = { golden:0, jumbo:0, magical:0 };
+            if(!state.upgrades) state.upgrades = { strongerFingers:0, monkeyHelpers:0, coconutFertilizer:0 };
+            recalcPassiveFromUpgrades();
+            updateUI();
+            saveGame();
+            showToast('import', 'Game imported successfully!', '📥');
+            return true;
+        } catch(e) {
+            showToast('error', 'Invalid save file!', '❌');
+            return false;
         }
-    </script>
+    }
+
+    function recalcPassiveFromUpgrades() {
+        let base = (state.upgrades.monkeyHelpers * 0.5) + (state.upgrades.coconutFertilizer * 0.3);
+        state.passivePerSecond = base;
+    }
+
+    function addCoconuts(amount, isClick=false) {
+        let gain = amount;
+        if(isClick) {
+            gain = amount;
+            state.totalClicks++;
+        }
+        state.coconuts += gain;
+        state.totalCoconutsEarned += gain;
+        if(state.coconuts < 0) state.coconuts = 0;
+        checkAchievements();
+        updateUI();
+        if(isClick && gain>0) createFallingCoconut();
+    }
+
+    function spendCoconuts(amount) { if(state.coconuts >= amount) { state.coconuts -= amount; updateUI(); return true; } return false; }
+
+    function buyUpgrade(upgradeId) {
+        const up = upgradesList.find(u => u.id === upgradeId);
+        if(!up) return;
+        let lvl = state.upgrades[upgradeId] || 0;
+        let cost = up.getCost(lvl);
+        if(state.coconuts >= cost) {
+            spendCoconuts(cost);
+            state.upgrades[upgradeId] = lvl + 1;
+            up.effect();
+            recalcPassiveFromUpgrades();
+            updateUI();
+            checkAchievements();
+            showToast('upgrade', `Purchased ${up.name}!`, '🔨');
+        }
+    }
+
+    function buySpecial(specialId) {
+        const spec = specials.find(s=>s.id === specialId);
+        let price = spec.basePrice;
+        if(state.coconuts >= price) {
+            spendCoconuts(price);
+            addCoconuts(spec.gainCoconuts);
+            state.specialsBought[specialId] = (state.specialsBought[specialId] || 0) + 1;
+            updateUI();
+            checkAchievements();
+            showToast('special', `Bought ${spec.name} +${spec.gainCoconuts} 🥥`, spec.emoji);
+        }
+    }
+
+    function performAscension() {
+        let required = getAscensionCost();
+        if(state.totalCoconutsEarned >= required && state.ascensionTier < 20) {
+            const glow = document.getElementById('ascensionGlow');
+            glow.style.opacity = '0.6';
+            setTimeout(()=> glow.style.opacity = '0', 800);
+            let newTier = state.ascensionTier + 1;
+            let bonusPercent = newTier * 10;
+            let preserved = {
+                ascensionTier: newTier,
+                ascensionBonus: bonusPercent,
+                totalCoconutsEarned: state.totalCoconutsEarned,
+                totalClicks: state.totalClicks,
+                specialsBought: state.specialsBought,
+                upgrades: { strongerFingers:0, monkeyHelpers:0, coconutFertilizer:0 }
+            };
+            state.coconuts = 0;
+            state.clickPower = 1 + Math.floor(bonusPercent/20);
+            state.passivePerSecond = 0;
+            state.upgrades = preserved.upgrades;
+            state.ascensionTier = preserved.ascensionTier;
+            state.ascensionBonus = preserved.ascensionBonus;
+            state.totalCoconutsEarned = preserved.totalCoconutsEarned;
+            state.totalClicks = preserved.totalClicks;
+            state.specialsBought = preserved.specialsBought;
+            recalcPassiveFromUpgrades();
+            updateUI();
+            showToast('ascend', `Ascended to Tier ${state.ascensionTier}! +${state.ascensionBonus}% future bonus`, '🌴');
+            saveGame();
+        } else {
+            showToast('error', `Need ${required.toLocaleString()} total coconuts to ascend`, '⚠️');
+        }
+    }
+
+    function getAscensionCost() { return 1000000 * (state.ascensionTier + 1); }
+
+    function getAscensionProgress() {
+        let required = getAscensionCost();
+        let progress = Math.min(1, state.totalCoconutsEarned / required);
+        return progress * 100;
+    }
+
+    function updateUI() {
+        document.getElementById('coconutDisplay').innerText = Math.floor(state.coconuts).toLocaleString();
+        document.getElementById('clickPower').innerText = state.clickPower;
+        document.getElementById('passiveIncome').innerText = state.passivePerSecond.toFixed(1);
+        document.getElementById('ascensionTier').innerText = state.ascensionTier;
+        let boostPercent = state.ascensionBonus || (state.ascensionTier*10);
+        document.getElementById('ascensionBoostSpan').innerHTML = `(+${boostPercent}% bonus)`;
+        document.getElementById('totalClicks').innerText = state.totalClicks;
+        let ascProgress = getAscensionProgress();
+        document.getElementById('ascensionProgressFill').style.width = ascProgress + '%';
+        let nextCost = getAscensionCost();
+        document.getElementById('nextAscensionInfo').innerHTML = `Next ascension: ${nextCost.toLocaleString()} 🥥 total`;
+        renderMerchant();
+        renderUpgrades();
+    }
+
+    function renderMerchant() {
+        const container = document.getElementById('merchantStock');
+        if(!container) return;
+        container.innerHTML = '';
+        specials.forEach(spec => {
+            let price = spec.basePrice;
+            let div = document.createElement('div');
+            div.className = 'variant-card';
+            div.innerHTML = `<div style="font-size:2rem;">${spec.emoji}</div>
+                            <div><strong>${spec.name}</strong></div>
+                            <div style="font-size:0.7rem;">${spec.desc}</div>
+                            <div>💰 ${price.toLocaleString()}</div>
+                            <button class="buy-btn" data-id="${spec.id}">Buy 🥥</button>`;
+            div.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); buySpecial(spec.id); });
+            container.appendChild(div);
+        });
+    }
+
+    function renderUpgrades() {
+        const container = document.getElementById('upgradeList');
+        if(!container) return;
+        container.innerHTML = '';
+        upgradesList.forEach(up => {
+            let lvl = state.upgrades[up.id] || 0;
+            let cost = up.getCost(lvl);
+            let div = document.createElement('div');
+            div.className = 'upgrade-item';
+            div.innerHTML = `<div><strong>${up.name}</strong></div>
+                            <div style="font-size:0.7rem;">${up.desc}</div>
+                            <div>Level ${lvl}</div>
+                            <div>💰 ${cost.toLocaleString()}</div>
+                            <button class="buy-btn" data-id="${up.id}">Upgrade</button>`;
+            div.querySelector('button').addEventListener('click', (e) => { e.stopPropagation(); buyUpgrade(up.id); });
+            container.appendChild(div);
+        });
+    }
+
+    function createFallingCoconut() {
+        const layer = document.getElementById('particleLayer');
+        const coconut = document.createElement('div');
+        coconut.className = 'falling-coconut';
+        coconut.innerText = '🥥';
+        const left = Math.random() * window.innerWidth;
+        coconut.style.left = left + 'px';
+        coconut.style.top = '-50px';
+        coconut.style.position = 'fixed';
+        coconut.style.fontSize = (1.5 + Math.random() * 1.5) + 'rem';
+        coconut.style.opacity = '0.9';
+        layer.appendChild(coconut);
+        let fall = 0;
+        const interval = setInterval(() => {
+            fall += 8;
+            coconut.style.top = fall + 'px';
+            if(fall > window.innerHeight + 100) {
+                clearInterval(interval);
+                coconut.remove();
+            }
+        }, 30);
+        setTimeout(() => { clearInterval(interval); if(coconut) coconut.remove(); }, 3000);
+    }
+
+    let toastTimeout = null;
+    function showToast(type, message, icon='🎉') {
+        const toast = document.getElementById('achievementToast');
+        if(!toast) return;
+        document.getElementById('toastMsg').innerText = message;
+        toast.querySelector('span').innerText = icon;
+        toast.classList.add('show');
+        if(toastTimeout) clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function checkAchievements() {
+        let newUnlock = false;
+        achievements.forEach(ach => {
+            if(!ach.unlocked && ach.req()) {
+                ach.unlocked = true;
+                newUnlock = true;
+                addCoconuts(ach.reward);
+                showToast('achievement', `${ach.name} +${ach.reward}🥥`, ach.icon);
+            }
+        });
+        if(newUnlock) renderAchievementPanel();
+        saveGame();
+    }
+
+    function renderAchievementPanel() {
+        let panel = document.getElementById('achievementsGrid');
+        if(!panel) return;
+        panel.innerHTML = '';
+        achievements.forEach(ach => {
+            let card = document.createElement('div');
+            card.className = `achievement-card ${ach.unlocked ? 'unlocked' : 'locked'}`;
+            card.innerHTML = `<div class="achievement-icon">${ach.icon}</div>
+                              <div class="achievement-name">${ach.name}</div>
+                              <div class="achievement-desc">${ach.desc}</div>
+                              <div class="achievement-reward">🎁 +${ach.reward}</div>`;
+            panel.appendChild(card);
+        });
+    }
+
+    let modalActive = false;
+    function showAchievementsModal() {
+        if(modalActive) return;
+        modalActive = true;
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'modal';
+        modalDiv.innerHTML = `<div class="modal-card"><h2>🏆 Achievements</h2><div id="achievementsGrid" class="achievements-grid"></div><button class="close-btn" id="closeModalBtn">Close</button></div>`;
+        document.body.appendChild(modalDiv);
+        renderAchievementPanel();
+        document.getElementById('closeModalBtn').addEventListener('click', () => { modalDiv.remove(); modalActive=false; });
+        modalDiv.addEventListener('click', (e) => { if(e.target === modalDiv) { modalDiv.remove(); modalActive=false; } });
+    }
+
+    function showImportExportModal() {
+        if(modalActive) return;
+        modalActive = true;
+        const exportData = JSON.stringify(state, null, 2);
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'modal';
+        modalDiv.innerHTML = `<div class="modal-card">
+            <h2>💾 Import / Export Save</h2>
+            <div class="import-area">
+                <div><strong>📤 Export Save Data:</strong></div>
+                <textarea id="exportJsonArea" class="import-textarea" rows="4" readonly>${exportData}</textarea>
+                <button id="copyExportBtn" class="action-btn" style="background:#7f5539; margin-top:8px;">📋 Copy to Clipboard</button>
+            </div>
+            <div class="import-area" style="margin-top:16px;">
+                <div><strong>📥 Import Save:</strong></div>
+                <textarea id="importJsonArea" class="import-textarea" rows="4" placeholder="Paste your saved JSON here..."></textarea>
+                <button id="confirmImportBtn" class="action-btn import-btn" style="background:#4c8b3c;">⬇️ Import Game</button>
+            </div>
+            <button class="close-btn" id="closeImportModal">Close</button>
+        </div>`;
+        document.body.appendChild(modalDiv);
+        
+        document.getElementById('copyExportBtn').addEventListener('click', () => {
+            const textarea = document.getElementById('exportJsonArea');
+            textarea.select();
+            document.execCommand('copy');
+            showToast('info', 'Save copied to clipboard!', '📋');
+        });
+        document.getElementById('confirmImportBtn').addEventListener('click', () => {
+            const importText = document.getElementById('importJsonArea').value;
+            if(importText.trim()) {
+                if(importSaveData(importText)) {
+                    modalDiv.remove();
+                    modalActive = false;
+                }
+            } else {
+                showToast('error', 'Paste save data first', '⚠️');
+            }
+        });
+        document.getElementById('closeImportModal').addEventListener('click', () => { modalDiv.remove(); modalActive=false; });
+        modalDiv.addEventListener('click', (e) => { if(e.target === modalDiv) { modalDiv.remove(); modalActive=false; } });
+    }
+
+    function softReset() {
+        if(confirm('Soft reset will reset coconuts, upgrades & specials but keep ascension tier & total clicks? (Achievements stay)')) {
+            state.coconuts = 0;
+            state.clickPower = 1 + Math.floor((state.ascensionBonus||0)/20);
+            state.upgrades = { strongerFingers:0, monkeyHelpers:0, coconutFertilizer:0 };
+            state.passivePerSecond = 0;
+            state.specialsBought = { golden:0, jumbo:0, magical:0 };
+            recalcPassiveFromUpgrades();
+            updateUI();
+            saveGame();
+            showToast('reset', 'Game soft reset!', '🔄');
+        }
+    }
+
+    let intervalId = null;
+    function startPassiveIncome() {
+        if(intervalId) clearInterval(intervalId);
+        intervalId = setInterval(() => {
+            if(state.passivePerSecond > 0) {
+                let gain = state.passivePerSecond;
+                addCoconuts(gain);
+                updateUI();
+            }
+        }, 1000);
+    }
+
+    function init() {
+        loadGame();
+        startPassiveIncome();
+        document.getElementById('clickCoconutBtn').addEventListener('click', () => {
+            let gain = state.clickPower;
+            let bonusPercent = state.ascensionBonus || (state.ascensionTier*10);
+            let totalGain = Math.floor(gain * (1 + bonusPercent/100));
+            addCoconuts(totalGain, true);
+            updateUI();
+        });
+        document.getElementById('ascendBtn').addEventListener('click', performAscension);
+        document.getElementById('resetStatsBtn').addEventListener('click', softReset);
+        document.getElementById('showAchievementsBtn').addEventListener('click', showAchievementsModal);
+        document.getElementById('importExportBtn').addEventListener('click', showImportExportModal);
+        setInterval(() => saveGame(), 30000);
+    }
+
+    init();
+</script>
 </body>
 </html>
