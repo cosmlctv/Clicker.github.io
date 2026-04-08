@@ -331,7 +331,7 @@
             <div class="progress-bar" style="height:12px; background:#ddc7a0; border-radius:20px; margin-top:12px;">
                 <div id="ascensionProgressFill" style="width:0%; height:100%; background:#d4a017; border-radius:20px;"></div>
             </div>
-            <div id="nextAscensionInfo" style="font-size:0.7rem;">Next ascension: 1,000,000 🥥</div>
+            <div id="nextAscensionInfo" style="font-size:0.7rem;">Next ascension: 1,000,000 🥥 total earned</div>
         </div>
 
         <div class="click-area">
@@ -341,17 +341,17 @@
                 <div>🌊 Passive/sec: <strong id="passiveIncome">0</strong></div>
                 <div>🥥 Total clicks: <span id="totalClicks">0</span></div>
                 <div>✨ Permanent Buffs: <strong id="totalBuffs">0</strong></div>
+                <div>📊 Total Earned: <strong id="totalEarned">0</strong></div>
             </div>
         </div>
 
-        <!-- ROTATING MERCHANT with PERMANENT BUFFS -->
         <div class="merchant-panel" id="merchantPanel">
             <div class="merchant-header">
                 <span>🏪 Tropical Merchant (permanent upgrades!)</span>
                 <span class="timer-badge" id="refreshTimer">🔄 30s</span>
             </div>
             <div class="merchant-stock" id="merchantStock"></div>
-            <div style="font-size:0.7rem; text-align:center; margin-top:8px;">✨ Each coconut gives a PERMANENT bonus to clicks or passive income!</div>
+            <div style="font-size:0.7rem; text-align:center; margin-top:8px;">✨ Each coconut gives a PERMANENT bonus that survives ascension!</div>
         </div>
 
         <div>
@@ -376,7 +376,7 @@
 <div id="achievementToast" class="achievement-toast">🎉 <span id="toastMsg"></span></div>
 
 <script>
-    // ------------------- COCONUTS WITH PERMANENT BUFFS -------------------
+    // COCONUTS WITH PERMANENT BUFFS
     const COCONUT_VAULT = [
         { id: "golden", name: "✨ Golden Coconut", basePrice: 500, buffType: "click", buffAmount: 1, emoji: "🌟", desc: "+1 click power permanently" },
         { id: "jumbo", name: "🐘 Jumbo Coconut", basePrice: 1800, buffType: "click", buffAmount: 3, emoji: "🥥💥", desc: "+3 click power" },
@@ -392,35 +392,30 @@
         { id: "godly", name: "👑 Godly Coconut", basePrice: 500000, buffType: "both", buffAmount: 150, buffAmountPassive: 50, emoji: "👑✨", desc: "+150 click & +50/sec!" }
     ];
 
-    // Game state
     let state = {
         coconuts: 0,
         totalCoconutsEarned: 0,
-        baseClickPower: 1,  // base from upgrades
-        bonusClickPower: 0,  // from special coconuts
+        baseClickPower: 1,
+        bonusClickPower: 0,
         basePassive: 0,
-        bonusPassive: 0,     // from special coconuts
+        bonusPassive: 0,
         ascensionTier: 0,
         totalClicks: 0,
         upgrades: { strongerFingers: 0, monkeyHelpers: 0, coconutFertilizer: 0 },
-        specialsBought: {}, // track purchases per coconut type
-        ascensionBonus: 0,
-        lastTimestamp: Date.now()
+        specialsBought: {},
+        ascensionBonus: 0
     };
 
-    // Initialize bought counters
     function initBoughtCounters() {
         COCONUT_VAULT.forEach(c => { if(state.specialsBought[c.id] === undefined) state.specialsBought[c.id] = 0; });
     }
 
-    // Calculate current click power (base + bonus + ascension)
     function getClickPower() {
         let base = state.baseClickPower + state.bonusClickPower;
         let bonusPercent = state.ascensionBonus || (state.ascensionTier * 12);
         return Math.floor(base * (1 + bonusPercent / 100));
     }
 
-    // Calculate current passive income
     function getPassiveIncome() {
         let base = state.basePassive + state.bonusPassive;
         let bonusPercent = state.ascensionBonus || (state.ascensionTier * 12);
@@ -443,7 +438,6 @@
         { id: 'clickPower50', name: 'Powerful Strikes', desc: 'Reach 50 click power', req: () => getClickPower() >= 50, reward: 10000, icon: '⚡', unlocked: false }
     ];
 
-    // ----- ROTATING MERCHANT -----
     let currentMerchantItems = [];
     let merchantInterval = null;
     let countdownSeconds = 30;
@@ -486,12 +480,10 @@
         }, 1000);
     }
 
-    // BUY SPECIAL COCONUT - APPLIES PERMANENT BUFF!
     function buySpecial(item) {
         if(state.coconuts >= item.basePrice) {
             state.coconuts -= item.basePrice;
             
-            // Apply permanent buff based on coconut type
             if(item.buffType === "click") {
                 state.bonusClickPower += item.buffAmount;
                 showToast(`${item.name} acquired! +${item.buffAmount} permanent click power!`, item.emoji);
@@ -504,10 +496,8 @@
                 showToast(`${item.name} acquired! +${item.buffAmount} click & +${item.buffAmountPassive}/sec!`, item.emoji);
             }
             
-            // Track purchase
             state.specialsBought[item.id] = (state.specialsBought[item.id] || 0) + 1;
             
-            // Also give a small instant coconut reward for satisfaction
             let instantReward = Math.floor(item.basePrice * 0.1);
             state.coconuts += instantReward;
             
@@ -524,7 +514,6 @@
         const container = document.getElementById('merchantStock');
         if(!container) return;
         container.innerHTML = '';
-        if(currentMerchantItems.length === 0) return;
         for(let item of currentMerchantItems) {
             let div = document.createElement('div');
             div.className = 'variant-card';
@@ -550,7 +539,6 @@
         }
     }
 
-    // ----- Core mechanics -----
     function addCoconuts(amount, isClick=false) {
         let gain = amount;
         if(isClick) {
@@ -564,21 +552,12 @@
         if(isClick && gain>0) createFallingCoconut();
     }
 
-    function spendCoconuts(amount) { 
-        if(state.coconuts >= amount) { 
-            state.coconuts -= amount; 
-            updateUI(); 
-            return true; 
-        } 
-        return false; 
-    }
-
     function buyUpgrade(upgradeId) {
         const up = upgradesList.find(u => u.id === upgradeId);
         let lvl = state.upgrades[upgradeId] || 0;
         let cost = up.getCost(lvl);
         if(state.coconuts >= cost) {
-            spendCoconuts(cost);
+            state.coconuts -= cost;
             state.upgrades[upgradeId] = lvl + 1;
             up.effect();
             updateUI();
@@ -588,8 +567,10 @@
         }
     }
 
+    // FIXED ASCENSION FUNCTION - checks total earned, not current coconuts
     function performAscension() {
         let required = 1000000 * (state.ascensionTier + 1);
+        
         if(state.totalCoconutsEarned >= required && state.ascensionTier < 30) {
             const glow = document.getElementById('ascensionGlow');
             glow.style.opacity = '0.6';
@@ -598,15 +579,14 @@
             let newTier = state.ascensionTier + 1;
             let bonusPercent = newTier * 12;
             
-            // Preserve special coconut buffs but reset upgrades
             let preserved = {
                 ascensionTier: newTier,
                 ascensionBonus: bonusPercent,
                 totalCoconutsEarned: state.totalCoconutsEarned,
                 totalClicks: state.totalClicks,
                 specialsBought: state.specialsBought,
-                bonusClickPower: state.bonusClickPower,  // KEEP permanent buffs from specials!
-                bonusPassive: state.bonusPassive,        // KEEP permanent buffs from specials!
+                bonusClickPower: state.bonusClickPower,
+                bonusPassive: state.bonusPassive,
                 upgrades: { strongerFingers:0, monkeyHelpers:0, coconutFertilizer:0 }
             };
             
@@ -626,7 +606,9 @@
             showToast(`✨ ASCENDED to Tier ${state.ascensionTier}! +${state.ascensionBonus}% bonus!`, '🌴');
             saveGame();
         } else {
-            showToast(`Need ${required.toLocaleString()} total coconuts to ascend`, '⚠️');
+            let needed = required;
+            let current = Math.floor(state.totalCoconutsEarned);
+            showToast(`❌ Need ${needed.toLocaleString()} total coconuts earned! (You have ${current.toLocaleString()})`, '⚠️');
         }
     }
 
@@ -638,13 +620,14 @@
         let boostPercent = state.ascensionBonus || (state.ascensionTier * 12);
         document.getElementById('ascensionBoostSpan').innerHTML = `(+${boostPercent}% bonus)`;
         document.getElementById('totalClicks').innerText = state.totalClicks;
+        document.getElementById('totalEarned').innerText = Math.floor(state.totalCoconutsEarned).toLocaleString();
         let totalBuffs = state.bonusClickPower + state.bonusPassive;
         document.getElementById('totalBuffs').innerText = totalBuffs;
         
         let required = 1000000 * (state.ascensionTier + 1);
         let progress = Math.min(1, state.totalCoconutsEarned / required) * 100;
         document.getElementById('ascensionProgressFill').style.width = progress + '%';
-        document.getElementById('nextAscensionInfo').innerHTML = `Next ascension: ${required.toLocaleString()} 🥥 total`;
+        document.getElementById('nextAscensionInfo').innerHTML = `Next ascension: ${required.toLocaleString()} 🥥 total earned (you have ${Math.floor(state.totalCoconutsEarned).toLocaleString()})`;
         
         renderUpgrades();
         renderMerchant(); 
@@ -708,12 +691,11 @@
     }
 
     function softReset() {
-        if(confirm('Soft reset: reset upgrades and coconuts? (Permanent buffs from special coconuts & ascension tier remain!)')) {
+        if(confirm('Soft reset: reset upgrades and current progress? (Permanent buffs from special coconuts & ascension tier remain!)')) {
             state.coconuts = 0;
             state.baseClickPower = 1;
             state.basePassive = 0;
             state.upgrades = { strongerFingers:0, monkeyHelpers:0, coconutFertilizer:0 };
-            // Keep bonusClickPower and bonusPassive (special coconut buffs persist!)
             updateUI();
             saveGame();
             showToast('Game soft reset! Permanent buffs kept!', '🔄');
@@ -745,16 +727,16 @@
     }
 
     function saveGame() { 
-        localStorage.setItem('coconutAscensionV3', JSON.stringify(state)); 
-        localStorage.setItem('achievementsV3', JSON.stringify(achievements.map(a=>a.unlocked))); 
+        localStorage.setItem('coconutAscensionV4', JSON.stringify(state)); 
+        localStorage.setItem('achievementsV4', JSON.stringify(achievements.map(a=>a.unlocked))); 
         document.getElementById('saveIndicator').innerHTML = '💾 Saved!'; 
         setTimeout(()=> { if(document.getElementById('saveIndicator')) document.getElementById('saveIndicator').innerHTML = '💾 Auto-saved'; }, 1500); 
     }
     
     function loadGame() {
-        let saved = localStorage.getItem('coconutAscensionV3');
+        let saved = localStorage.getItem('coconutAscensionV4');
         if(saved) { try { let loaded = JSON.parse(saved); state = { ...state, ...loaded }; } catch(e) {} }
-        let achSaved = localStorage.getItem('achievementsV3');
+        let achSaved = localStorage.getItem('achievementsV4');
         if(achSaved) { try { let unlocks = JSON.parse(achSaved); achievements.forEach((ach,idx) => { if(unlocks[idx]) ach.unlocked = true; }); } catch(e) {} }
         initBoughtCounters();
         updateUI();
