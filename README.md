@@ -21,14 +21,6 @@ A fun and addictive coconut clicking idle game where you click to earn coconuts 
 2. **Buy upgrades** 💪 to earn more coconuts per click
 3. **Save your progress** 💾 to continue later
 4. **Keep clicking** to become the ultimate coconut tycoon!
-
-## 🚀 Technologies Used
-
-- HTML5
-- CSS3 (Animations & Gradients)
-- JavaScript (ES6)
-- LocalStorage API (for saving progress)
-
 ## 📱 Mobile Friendly
 
 The game works great on both desktop and mobile devices! Tap the coconut on your phone to play anywhere.
@@ -40,3 +32,5 @@ To run this game locally:
 1. Clone the repository:
    ```bash
    git clone https://github.com/cosmlctv/clicker.github.io.git
+
+## this is just a little projact i'm doing, thanks for visiting my page :)
